@@ -147,7 +147,7 @@ $ sudo chown -R $(whoami):$(whoami) rootfs
 # Terminal A
 $ mkdir rootfs; sudo docker export $(sudo docker create ubuntu) | sudo tar -C rootfs -xvf -
 $ mkdir rootfs/test
-$ sudo ./idmapped --map-mount b:0:1000:65536 $(pwd)/rootfs $(pwd)/mapped-rootfs
+$ sudo idmapped --map-mount b:0:1000:65536 $(pwd)/rootfs $(pwd)/mapped-rootfs
 $ ls -l rootfs
 $ ls -l mapped-rootfs
 $ unshare --user --root mapped-rootfs bash
