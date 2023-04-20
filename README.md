@@ -56,64 +56,54 @@ PID   USER     TIME  COMMAND
 
 ## Rootlessコンテナ
 
-Rootlessへの課題
+Rootlessへの課題:
 - `CAP_SYS_ADMIN`
-- uid/gid
 - ファイルの所有権
+- cgroup
 
 
 ## Rootlessコンテナ内でもrootユーザーになりたい！
 
 ###  User namespaces
 
-CAP_SYS_ADMIN
-
 コンテナ内では特権を持ちつつ、ホストOSでは特権を持たないユーザーを作る
 
-- 見かけのUID = 0 -> いろいろな他のnamespaceが作れるようになる！ 
+- 見かけのUID=0 → いろいろな他のnamespaceが作れるようになる！ 
 - user namespace外でアクセスできないファイルはやっぱりアクセスできない
 - uidのマッピングはできる
+
+```console
+$ unshare --user
+$ whoami
+$ unshare --net
+```
+
+### uid/gid
 
 `コンテナ内のuid:ホストでのuid:size`
 
 ```console
-$ unshare --user
+# Terminal: Container
 $ id
 $ echo $$
-[container pid]
-```
+[container_pid]
 
-another terminal
-
-```console
+# Terminal: Host
 $ cpid=$container_pid
 $ grep "Uid" /proc/$cpid/status
 $ echo '0 1000 1' > /proc/$cpid/uid_map
-```
 
-container terminal
-```console
+# Terminal: Container
 $ id
 $ touch test.txt
-```
 
-host terminal
-```console
+# Terminal: Host
 $ ls -l test.txt
-```
 
-container terminal
-```console
+# Terminal: Container
 $ whoami
-$ shutdown
 $ unshare --net
 $ ip a
-```
-
-
-TODO: podman with bpftrace
-```console
-$ podman run -it --rm --userns=auto:uidmapping=0:1000:1 --cap-add=sys_admin,mknod --device=/dev/fuse --security-opt label=disable quay.io/podman/stable echo hi
 ```
 
 ## Mount namespace
@@ -128,8 +118,6 @@ chownする？
 - fuse-overlayfs
 - shiftfs
 - id-mapped mount
-
-https://gihyo.jp/article/2022/12/linux_containers-0050
 
 ```console
 $ sudo docker export $(sudo docker create ubuntu) | sudo tar -C rootfs -xvf -
@@ -161,4 +149,9 @@ $ echo '0 1000 65536' | sudo tee /proc/$cid/gid_map
 $ cd test
 $ touch test.txt
 $ echo Hello > test.txt
+```
+
+TODO: どう扱うか
+```console
+$ podman run -it --rm --userns=auto:uidmapping=0:1000:1 --cap-add=sys_admin,mknod --device=/dev/fuse --security-opt label=disable quay.io/podman/stable echo hi
 ```
