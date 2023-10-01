@@ -1,0 +1,11 @@
+{    
+	"image": "ubuntu:latest",
+	"features": {    
+		"docker-in-docker": {
+			"version": "latest",
+			"moby": true,
+			"dockerDashComposeVersion": "v2"
+		}
+	},    
+	"postStartCommand": "./init.sh"
+}
