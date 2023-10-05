@@ -6,5 +6,6 @@
 			"moby": true,
 			"dockerDashComposeVersion": "v2"
 		}
-	}
+	},
+	"postStartCommand": "init.sh"
 }

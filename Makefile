@@ -1,10 +1,10 @@
-SIZE:=4096
-MPI_NP:=8
-OMP_NUM_THREADS:=8
+SIZE:=64
+MPI_NP:=2
+OMP_NUM_THREADS:=2
 
 PHONY: run-v1
 run-v1:
-	time python v1.py $(SIZE)
+	time python3 v1.py $(SIZE)
 
 PHONY: run-v2
 run-v2:
@@ -48,5 +48,5 @@ run-v9:
 
 PHONY: run-v10
 run-v10:
-	time python v10.py $(SIZE)
+	time python3 v10.py $(SIZE)
 

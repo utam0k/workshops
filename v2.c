@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
                    (end.tv_usec - start.tv_usec) / 1000.0;
   printf("Size: %dx%d, Execution Time: %f ms\n", size, size, elapsed);
 
-  matrix_multiplication_(A, B, result_blas);
+  matrix_multiplication_blas(A, B, result_blas);
   check_results(result, result_blas, size);
 
   free_matrix(A);

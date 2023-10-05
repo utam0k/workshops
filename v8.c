@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
   MPI_Bcast(&(B->linear[0]), size * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-  Matrix *sub_A = create_sized_matrix(rows_per_process, size);
+  Matrix *sub_A = create_matrix(rows_per_process, size);
   MPI_Scatter(&(A->linear[world_rank * rows_per_process]),
               rows_per_process * size, MPI_DOUBLE, sub_A->linear,
               rows_per_process * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
         1.e6;
     printf("Size: %dx%d, Execution Time: %f ms\n", size, size, delta * 1000);
 
-    Matrix *result_blas = create_matrix(size);
+    Matrix *result_blas = create_matrix(size, size);
     matrix_multiplication_blas(A, B, result_blas);
     check_results(total_result, result_blas, size);
     free_matrix(result_blas);

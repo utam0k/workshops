@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   int rows_per_process = size / world_size;
   int start_row = world_rank * rows_per_process;
   int end_row = (world_rank + 1) * rows_per_process;
-  local_result = create_sized_matrix(size, size);
+  local_result = create_matrix(size, size);
   matrix_multiplication(A, B, local_result, start_row, end_row);
 
 
