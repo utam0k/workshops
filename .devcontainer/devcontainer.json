@@ -7,5 +7,5 @@
 			"dockerDashComposeVersion": "v2"
 		}
 	},
-	"postStartCommand": "init.sh"
+	"postStartCommand": "sudo chown ubuntu:ubuntu /tmp"
 }
