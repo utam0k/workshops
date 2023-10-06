@@ -37,10 +37,10 @@ void block_multiply(Matrix *A, Matrix *B, Matrix *result, int i_start,
 }
 
 void matrix_multiplication(Matrix *A, Matrix *B, Matrix *local_result,
-                           int start_row, int end_row) {
+                           int start, int end) {
   int size = A->size;
 #pragma omp parallel for
-  for (int i = start_row; i < end_row; i += BLOCK_SIZE) {
+  for (int i = start; i < end; i += BLOCK_SIZE) {
     for (int j = 0; j < size; j += BLOCK_SIZE) {
       for (int k = 0; k < size; k += BLOCK_SIZE) {
         block_multiply(A, B, local_result, i, j, k);
@@ -55,12 +55,12 @@ int main(int argc, char **argv) {
   int size = atoi(argv[1]);
 
   Matrix *A, *B, *total_result, *local_result;
-  struct timeval start, end;
+  struct timeval start_time, end_time;
 
   int world_rank, world_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  int rows_per_process = size / world_size;
+  int per_process = size / world_size;
 
   A = create_matrix(size, size);
   B = create_matrix(size, size);
@@ -70,33 +70,33 @@ int main(int argc, char **argv) {
     initialize_matrix(B);
   }
 
-  gettimeofday(&start, NULL);
+  gettimeofday(&start_time, NULL);
 
   MPI_Bcast(&(B->linear[0]), size * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-  Matrix *sub_A = create_matrix(rows_per_process, size);
-  MPI_Scatter(&(A->linear[world_rank * rows_per_process]),
-              rows_per_process * size, MPI_DOUBLE, sub_A->linear,
-              rows_per_process * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  Matrix *sub_A = create_matrix(per_process, size);
+  MPI_Scatter(&(A->linear[world_rank * per_process]), per_process * size,
+              MPI_DOUBLE, sub_A->linear, per_process * size, MPI_DOUBLE, 0,
+              MPI_COMM_WORLD);
 
   // Do the multiplication
-  local_result = create_matrix(rows_per_process, size);
-  matrix_multiplication(sub_A, B, local_result, 0, rows_per_process);
+  local_result = create_matrix(per_process, size);
+  matrix_multiplication(sub_A, B, local_result, 0, per_process);
 
   // Gather the results
-  int mpi_block_size = size * rows_per_process;
-  int start_row = world_rank * rows_per_process;
-  int start_pos = start_row * size;
+  int mpi_block_size = size * per_process;
+  int start = world_rank * per_process;
+  int start_pos = start * size;
   MPI_Gather(&(local_result->linear[0]), mpi_block_size, MPI_DOUBLE,
              &(total_result->linear[start_pos]), mpi_block_size, MPI_DOUBLE, 0,
              MPI_COMM_WORLD);
 
-  gettimeofday(&end, NULL);
+  gettimeofday(&end_time, NULL);
 
   if (world_rank == 0) {
-    double delta =
-        ((end.tv_sec - start.tv_sec) * 1000000u + end.tv_usec - start.tv_usec) /
-        1.e6;
+    double delta = ((end_time.tv_sec - start_time.tv_sec) * 1000000u +
+                    end_time.tv_usec - start_time.tv_usec) /
+                   1.e6;
     printf("Size: %dx%d, Execution Time: %f ms\n", size, size, delta * 1000);
 
     Matrix *result_blas = create_matrix(size, size);
